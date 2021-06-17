@@ -4,8 +4,12 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import { Icon } from '@material-ui/core';
+import { withRouter } from 'react-router-dom';
+import firebase from 'firebase/app';
+import 'firebase/database';
+import 'firebase/auth'; 
 
-const User = () => {
+const User = (props: any) => {
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -19,8 +23,13 @@ const User = () => {
   };
 
   const handleLogout = () => {
-      
-  }
+    setAnchorEl(null);
+    
+      firebase.auth().signOut().then(()=>{
+        if( props.onLogout) props.onLogout();
+        props.history.push('/login')
+      });
+  };
 
     return (
         <div>
@@ -31,7 +40,7 @@ const User = () => {
                 onClick={handleMenu}
                 color="inherit"
               >
-                  <Icon>account-circle</Icon>
+                  <Icon>face</Icon>
               </IconButton>
               <Menu
                 id="menu-appbar"
@@ -48,10 +57,10 @@ const User = () => {
                 open={open}
                 onClose={handleClose}
               >
-                <MenuItem disabled onClick={handleClose}>Marcela</MenuItem>
+                <MenuItem onClick={handleClose} disabled>{props.user.name}</MenuItem>
                 <MenuItem onClick={handleLogout}>Salir</MenuItem>
               </Menu>
             </div>
     )
 };
-export default User;
+export default withRouter(User);

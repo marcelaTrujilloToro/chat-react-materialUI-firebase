@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -9,8 +9,14 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { Icon } from '@material-ui/core';
+import { Link as RouterLink, LinkProps as RouterLinkProps, withRouter } from 'react-router-dom';
+import firebase from 'firebase/app';
+import 'firebase/database';
+import 'firebase/auth'; 
 
-
+const MyLink = React.forwardRef<any, Omit<RouterLinkProps, 'to'>>((props, ref) => (
+    <RouterLink ref={ref} to="/signup/" {...props} />
+  ));
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -32,8 +38,30 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Login = () => {
+const Login = (props: any) => {
+
   const classes = useStyles();
+  const [user, setUser] = useState({
+    email: '',
+    password: ''
+  });
+
+  const handleChange = (e: any) => {
+    setUser({...user, [e.target.name]: e.target.value})
+  };
+
+  const handleLogin = (e: any) => {
+    e.preventDefault();
+
+    firebase.auth().signInWithEmailAndPassword(user.email, user.password)
+    .then(response => {
+      props.history.push('/');
+    })
+    .catch(error => {
+      console.log(error);
+      alert(error.message);
+    });
+  };
 
   return (
     <Container component="main" maxWidth="xs">
@@ -43,9 +71,9 @@ const Login = () => {
           <Icon>lock-outlined</Icon>
         </Avatar>
         <Typography component="h1" variant="h5">
-          Ingresar al chat
+          Ingresar a ChatApp
         </Typography>
-        <form className={classes.form} noValidate>
+        <form className={classes.form} onSubmit={handleLogin}>
           <TextField
             variant="outlined"
             margin="normal"
@@ -56,6 +84,8 @@ const Login = () => {
             name="email"
             autoComplete="email"
             autoFocus
+            value= {user.email}
+            onChange={handleChange}
           />
           <TextField
             variant="outlined"
@@ -67,6 +97,8 @@ const Login = () => {
             type="password"
             id="password"
             autoComplete="current-password"
+            value= {user.password}
+            onChange={handleChange}
           />
 
           <Button
@@ -80,7 +112,7 @@ const Login = () => {
           </Button>
           <Grid container>
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link component={MyLink} variant="body2">
                 {"No tengo una cuenta"}
               </Link>
             </Grid>
@@ -91,4 +123,4 @@ const Login = () => {
     </Container>
   );
 };
-export default Login;
+export default withRouter(Login);
