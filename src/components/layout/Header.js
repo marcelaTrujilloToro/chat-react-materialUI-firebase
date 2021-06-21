@@ -1,26 +1,24 @@
 import React from 'react';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
-import { Icon } from '@material-ui/core';
+import Icon from '@material-ui/core/Icon';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      flexGrow: 1,
-    },
-    menuButton: {
-      marginRight: theme.spacing(2),
-    },
-    title: {
-      flexGrow: 1,
-    },
-  }),
-);
+const useStyles = makeStyles(theme => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+  },
+}));
 
-const HeaderChat: React.FC = (props) => {
+const Header = (props) => {
   const classes = useStyles();
 
   return (
@@ -31,13 +29,13 @@ const HeaderChat: React.FC = (props) => {
             <Icon>menu</Icon>
           </IconButton>
           <Typography variant="h6" className={classes.title}>
-            Chat app
+            Chat App
           </Typography>
-            {props.children}
+          {props.children}
         </Toolbar>
       </AppBar>
     </div>
   );
 };
 
-export default HeaderChat;
+export default Header;

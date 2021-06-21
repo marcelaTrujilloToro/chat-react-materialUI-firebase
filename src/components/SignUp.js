@@ -1,33 +1,31 @@
 import React, { useState } from 'react';
-import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Link from '@material-ui/core/Link';
+import { Link as RouterLink, withRouter } from 'react-router-dom';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { Link as RouterLink, LinkProps as RouterLinkProps, withRouter } from 'react-router-dom';
-import { Icon } from '@material-ui/core';
 import firebase from 'firebase/app';
 import 'firebase/database';
-import 'firebase/auth'; 
+import 'firebase/auth';
+import Alert from './Alert';
 
-const MyLink = React.forwardRef<any, Omit<RouterLinkProps, 'to'>>((props, ref) => (
-    <RouterLink ref={ref} to="/login/" {...props} />
-  ));
+const MyLink = React.forwardRef((props, ref) => <RouterLink innerRef={ref} {...props} />);
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
+  '@global': {
+    body: {
+      backgroundColor: theme.palette.common.white,
+    },
+  },
   paper: {
     marginTop: theme.spacing(8),
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
   },
   form: {
     width: '100%', // Fix IE 11 issue.
@@ -38,48 +36,58 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const SignUp = (props: any) =>  {
+const SignUp = (props) => {
   const classes = useStyles();
 
   const [user, setUser] = useState({
     name: '',
     email: '',
     password: '',
-    avatar: ''
+    avatar: '',
   });
 
-  const handleChange = (e: any) => {
-    setUser({...user, [e.target.name]: e.target.value})
+  const [alertMessage, setAlertMessage] = useState(null);
+
+  const handleChange = (e) => {
+    setUser({
+      ...user,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
+
+    setAlertMessage(null);
+
     firebase.auth().createUserWithEmailAndPassword(user.email, user.password)
     .then(response => {
-      //guardar datos de usuario
-      //va a guardar un registro en la DB con los datos que ingrese el usuario (toca ponerle un ID)
-      // enviarlos con el set(user)
-      // delete user.password;
-      firebase.database().ref(`/users/${response.user?.uid}`).set(user);
-      alert('Bienvenido a ChatApp');
+      // guardar los datos del usuario
+      delete user.password;
+      firebase.database().ref(`/users/${response.user.uid}`).set(user);
+      //alert('Bienvenido a Chat App');
+      setAlertMessage({
+        type: 'success',
+        message: 'Bienvenido a Chat App'
+      });
       props.history.push('/');
     })
     .catch(error => {
       console.log(error);
-      alert(error.message);
+      //alert(error.message);
+      setAlertMessage({
+        type: 'error',
+        message: error.message
+      });
     });
-
   };
 
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
-      <Avatar className={classes.avatar}>
-          <Icon>face</Icon>
-        </Avatar>
         <Typography component="h1" variant="h5">
-          Registrarme en ChatApp
+          Registrarme en Chat App
         </Typography>
         <form className={classes.form} onSubmit={handleSubmit}>
           <Grid container spacing={2}>
@@ -93,7 +101,7 @@ const SignUp = (props: any) =>  {
                 id="name"
                 label="Nombre"
                 autoFocus
-                value= {user.name}
+                value={user.name}
                 onChange={handleChange}
               />
             </Grid>
@@ -102,10 +110,10 @@ const SignUp = (props: any) =>  {
                 variant="outlined"
                 required
                 fullWidth
-                id="url"
+                id="avatar"
                 label="URL avatar"
                 name="avatar"
-                value= {user.avatar}
+                value={user.avatar}
                 onChange={handleChange}
               />
             </Grid>
@@ -118,7 +126,7 @@ const SignUp = (props: any) =>  {
                 label="Email Address"
                 name="email"
                 autoComplete="email"
-                value= {user.email}
+                value={user.email}
                 onChange={handleChange}
               />
             </Grid>
@@ -132,11 +140,10 @@ const SignUp = (props: any) =>  {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                value= {user.password}
+                value={user.password}
                 onChange={handleChange}
               />
             </Grid>
-            
           </Grid>
           <Button
             type="submit"
@@ -149,14 +156,20 @@ const SignUp = (props: any) =>  {
           </Button>
           <Grid container justify="flex-end">
             <Grid item>
-              <Link component={MyLink} variant="body2">
-                ¿Ya tienes una cuenta? Ingresa aquí
+              <Link to="/login" component={MyLink} variant="body2">
+                {"¿Ya tienes una cuenta? Ingresa aquí"}
               </Link>
             </Grid>
           </Grid>
         </form>
       </div>
-      
+      {alertMessage && 
+        <Alert
+          type={alertMessage.type}
+          message={alertMessage.message}
+          autoclose={5000}
+        />
+      }
     </Container>
   );
 };
